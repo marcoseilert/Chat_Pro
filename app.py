@@ -245,8 +245,8 @@ def initialize_session_state():
         st.session_state.messages = []
     if 'selected_model_id' not in st.session_state:
         st.session_state.selected_model_id = DEFAULT_MODEL_ID
-    if 'api_key' not in st.session_state:
-        st.session_state.api_key = ""
+    #if 'api_key' not in st.session_state:
+        #st.session_state.api_key = ""
     if 'confirm_delete_id' not in st.session_state:
         st.session_state.confirm_delete_id = None
     if 'show_free_models' not in st.session_state:
