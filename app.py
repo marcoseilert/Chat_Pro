@@ -246,7 +246,7 @@ def initialize_session_state():
     if 'selected_model_id' not in st.session_state:
         st.session_state.selected_model_id = DEFAULT_MODEL_ID
     if 'api_key' not in st.session_state:
-        st.session_state.api_key = "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"
+        st.session_state.api_key = ""
     if 'confirm_delete_id' not in st.session_state:
         st.session_state.confirm_delete_id = None
     if 'show_free_models' not in st.session_state:
