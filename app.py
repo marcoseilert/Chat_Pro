@@ -565,42 +565,6 @@ with st.sidebar:
 
     st.divider()
 
-    # Entrada da Chave API - CORRIGIDA
-    api_key_input = st.text_input(
-        "🔑 Chave API OpenRouter",
-        type="password",
-        key="api_key",
-        help="Insira sua chave API do OpenRouter (deve começar com 'sk-or-v1-')",
-        placeholder="sk-or-v1-..."
-    )
-
-    # Validação em tempo real da API Key
-    if st.session_state.api_key:
-        if not st.session_state.api_key.startswith('sk-or-v1-'):
-            st.error("⚠️ A chave API deve começar com 'sk-or-v1-'. Verifique se você está usando uma chave do OpenRouter.")
-        elif len(st.session_state.api_key) < 20:
-            st.warning("⚠️ A chave API parece muito curta. Verifique se foi copiada completamente.")
-        else:
-            st.success("✅ Formato da chave API válido")
-
-    if not st.session_state.api_key:
-        st.warning("⚠️ Insira sua chave API para usar o chat.")
-
-    # Botão de teste da API Key
-    if st.session_state.api_key and st.button("🧪 Testar API Key"):
-        with st.spinner("Testando API Key..."):
-            if test_api_key(st.session_state.api_key):
-                st.success("✅ API Key válida!")
-            else:
-                st.error("❌ API Key inválida ou sem acesso. Verifique se:")
-                st.write("- A chave foi copiada corretamente")
-                st.write("- A chave não expirou")
-                st.write("- Sua conta OpenRouter tem créditos")
-
-    st.markdown("[Obter chave OpenRouter](https://openrouter.ai/keys)", unsafe_allow_html=True)
-
-    st.divider()
-
     # Conversas Salvas
     st.header("📂 Conversas Salvas")
     conversations = load_conversations_metadata()
@@ -662,6 +626,43 @@ with st.sidebar:
                     st.rerun()
                 else:
                     st.toast("Falha ao atualizar os modelos.", icon="❌")
+
+
+    st.divider()
+
+    # Entrada da Chave API - CORRIGIDA
+    api_key_input = st.text_input(
+        "🔑 Chave API OpenRouter",
+        type="password",
+        key="api_key",
+        help="Insira sua chave API do OpenRouter (deve começar com 'sk-or-v1-')",
+        placeholder="sk-or-v1-..."
+    )
+
+    # Validação em tempo real da API Key
+    if st.session_state.api_key:
+        if not st.session_state.api_key.startswith('sk-or-v1-'):
+            st.error("⚠️ A chave API deve começar com 'sk-or-v1-'. Verifique se você está usando uma chave do OpenRouter.")
+        elif len(st.session_state.api_key) < 20:
+            st.warning("⚠️ A chave API parece muito curta. Verifique se foi copiada completamente.")
+        else:
+            st.success("✅ Formato da chave API válido")
+
+    if not st.session_state.api_key:
+        st.warning("⚠️ Insira sua chave API para usar o chat.")
+
+    # Botão de teste da API Key
+    if st.session_state.api_key and st.button("🧪 Testar API Key"):
+        with st.spinner("Testando API Key..."):
+            if test_api_key(st.session_state.api_key):
+                st.success("✅ API Key válida!")
+            else:
+                st.error("❌ API Key inválida ou sem acesso. Verifique se:")
+                st.write("- A chave foi copiada corretamente")
+                st.write("- A chave não expirou")
+                st.write("- Sua conta OpenRouter tem créditos")
+
+    st.markdown("[Obter chave OpenRouter](https://openrouter.ai/keys)", unsafe_allow_html=True)
 
 
 # --- Área Principal do Chat ---
