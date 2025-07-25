@@ -242,7 +242,8 @@ def initialize_session_state():
     if 'selected_model_id' not in st.session_state:
         st.session_state.selected_model_id = DEFAULT_MODEL_ID
     if 'api_key' not in st.session_state:
-        st.session_state.api_key = ""  # CORREÇÃO: Inicializar vazio
+        #st.session_state.api_key = ""  # CORREÇÃO: Inicializar vazio
+        st.session_state.api_key = st.secrets["OPENROUTER_API_KEY"]
     if 'confirm_delete_id' not in st.session_state:
         st.session_state.confirm_delete_id = None
     if 'show_free_models' not in st.session_state:
@@ -669,7 +670,6 @@ selected_model_name = MODEL_NAME_MAP.get(st.session_state.selected_model_id, "Ne
 # Adiciona indicação de consulta web no nome do modelo se estiver habilitada
 model_display_name = f"{selected_model_name}:online" if st.session_state.web_search_enabled else selected_model_name
 st.caption(f"Conversa ID: `{st.session_state.conversation_id[:8]}...` | Modelo: `{model_display_name}`")
-st.caption("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")
 
 if not st.session_state.messages:
     st.info("👋 Olá! Digite sua mensagem abaixo para começar.")
