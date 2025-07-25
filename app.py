@@ -31,11 +31,9 @@ def get_initial_models():
     """Retorna uma estrutura de modelos padrão se o arquivo não existir."""
     # Esta função agora retorna uma lista de dicionários
     initial_free = [
-        {'id': 'deepseek/deepseek-chat-v3-0324:free', 'name': 'Deepseek: Deepseek Chat V3 0324 (Free)', 'company': 'Deepseek'},
-        {'id': 'google/gemini-2.0-flash-exp:free', 'name': 'Google: Gemini 2.0 Flash Exp (Free)', 'company': 'Google'}
+        {'id': 'deepseek/deepseek-chat-v3-0324:free', 'name': 'Deepseek: Deepseek Chat V3 0324 (Free)', 'company': 'Deepseek'}
     ]
     initial_paid = [
-        {'id': 'anthropic/claude-3.7-sonnet', 'name': 'Anthropic: Claude 3.7 Sonnet', 'company': 'Anthropic'},
         {'id': 'openai/gpt-4o', 'name': 'OpenAI: GPT-4o', 'company': 'OpenAI'}
     ]
     return initial_free, initial_paid
@@ -166,7 +164,7 @@ MODEL_ID_MAP = {model['name']: model['id'] for model in ALL_MODELS}
 ALL_COMPANIES = ordenar_empresas(list(set(model['company'] for model in ALL_MODELS)))
 
 # Define um modelo padrão
-DEFAULT_MODEL_ID = "moonshotai/kimi-k2:free"
+DEFAULT_MODEL_ID = "qwen/qwen3-235b-a22b-2507:free"
 if not any(m['id'] == DEFAULT_MODEL_ID for m in ALL_MODELS):
     DEFAULT_MODEL_ID = ALL_MODELS[0]['id'] if ALL_MODELS else None
 
