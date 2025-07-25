@@ -242,7 +242,7 @@ def initialize_session_state():
     if 'selected_model_id' not in st.session_state:
         st.session_state.selected_model_id = DEFAULT_MODEL_ID
     if 'api_key' not in st.session_state:
-        st.session_state.api_key = "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"  # CORREÇÃO: Inicializar vazio
+        st.session_state.api_key = "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"  # CORREÇÃO: Inicializar vazio
     if 'confirm_delete_id' not in st.session_state:
         st.session_state.confirm_delete_id = None
     if 'show_free_models' not in st.session_state:
