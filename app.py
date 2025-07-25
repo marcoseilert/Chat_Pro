@@ -135,10 +135,10 @@ def ordenar_empresas(empresas: list[str]) -> list[str]:
     principais_em_ia = [
         "Google",
         "OpenAI",
-	"xAI",
+        "xAI",
         "Anthropic",
-	"MoonshotAI",
-	"DeepSeek",
+        "MoonshotAI",
+        "DeepSeek",
         "Qwen",
         "Perplexity",
         "Meta",
@@ -164,8 +164,6 @@ ALL_MODELS = FREE_MODELS + PAID_MODELS
 MODEL_NAME_MAP = {model['id']: model['name'] for model in ALL_MODELS}
 MODEL_ID_MAP = {model['name']: model['id'] for model in ALL_MODELS}
 ALL_COMPANIES = ordenar_empresas(list(set(model['company'] for model in ALL_MODELS)))
-
-
 
 # Define um modelo padrão
 DEFAULT_MODEL_ID = "moonshotai/kimi-k2:free"
@@ -235,7 +233,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --- Funções Auxiliares (sem alterações) ---
+# --- Funções Auxiliares ---
 
 def initialize_session_state():
     """Inicializa as variáveis necessárias no estado da sessão."""
@@ -246,7 +244,7 @@ def initialize_session_state():
     if 'selected_model_id' not in st.session_state:
         st.session_state.selected_model_id = DEFAULT_MODEL_ID
     if 'api_key' not in st.session_state:
-        st.session_state.api_key = "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"
+        st.session_state.api_key = ""  # CORREÇÃO: Inicializar vazio
     if 'confirm_delete_id' not in st.session_state:
         st.session_state.confirm_delete_id = None
     if 'show_free_models' not in st.session_state:
@@ -260,11 +258,32 @@ def initialize_session_state():
     if 'web_search_enabled' not in st.session_state:
         st.session_state.web_search_enabled = False
 
+def test_api_key(api_key: str) -> bool:
+    """Testa se a API Key é válida fazendo uma requisição simples."""
+    if not api_key or not api_key.startswith('sk-or-v1-'):
+        return False
+    
+    url = "https://openrouter.ai/api/v1/models"
+    headers = {"Authorization": f"Bearer {api_key.strip()}"}
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        return response.status_code == 200
+    except:
+        return False
+
 def call_openrouter_api(model_id: str, api_key: str, conversation_history: list, web_search_enabled: bool = False) -> str:
     """Chama a API OpenRouter Chat Completions de forma segura."""
-    if not api_key:
-        logging.error("API Key não fornecida para call_openrouter_api.")
-        return "Erro: Chave API não configurada."
+    # Validação mais rigorosa da API Key
+    if not api_key or not api_key.strip():
+        logging.error("API Key não fornecida ou vazia para call_openrouter_api.")
+        return "Erro: Chave API não configurada. Por favor, insira uma chave API válida na sidebar."
+    
+    # Verificar se a API key tem o formato correto do OpenRouter
+    if not api_key.startswith('sk-or-v1-'):
+        logging.error("API Key não tem o formato correto do OpenRouter.")
+        return "Erro: A chave API deve começar com 'sk-or-v1-'. Verifique se você está usando uma chave do OpenRouter."
+    
     if not model_id:
         logging.error("Modelo não fornecido para call_openrouter_api.")
         return "Erro: Modelo não selecionado."
@@ -277,7 +296,7 @@ def call_openrouter_api(model_id: str, api_key: str, conversation_history: list,
 
     url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {api_key.strip()}",  # Remover espaços em branco
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost:8501",
         "X-Title": "Streamlit Chat Pro"
@@ -312,16 +331,23 @@ def call_openrouter_api(model_id: str, api_key: str, conversation_history: list,
         logging.error(f"{error_msg} (modelo {effective_model_id}) - Payload: {payload}")
         try:
             error_details = response.json().get("error", {}).get("message", response.text)
-            return f"Erro HTTP {response.status_code}: {error_details}"
+            if response.status_code == 401:
+                return f"Erro de Autenticação (401): API Key inválida ou expirada. Por favor, verifique sua chave API do OpenRouter. Detalhes: {error_details}"
+            elif response.status_code == 402:
+                return f"Erro de Pagamento (402): Créditos insuficientes na sua conta OpenRouter. Detalhes: {error_details}"
+            else:
+                return f"Erro HTTP {response.status_code}: {error_details}"
         except Exception:
-            return f"Erro HTTP {response.status_code}: {response.text}"
+            if response.status_code == 401:
+                return f"Erro de Autenticação (401): API Key inválida ou expirada. Por favor, verifique sua chave API do OpenRouter."
+            else:
+                return f"Erro HTTP {response.status_code}: {response.text}"
     except requests.exceptions.RequestException as e:
         logging.error(f"Erro de rede ou conexão ao chamar a API (modelo {effective_model_id}): {e}")
         return f"Erro de conexão: Verifique sua rede ({e})."
     except Exception as e:
         logging.exception(f"Erro inesperado ao chamar a API (modelo {effective_model_id}): {e}")
         return f"Erro inesperado no processamento da API: {e}"
-
 
 def save_conversation(conversation_id: str, messages: list, model_id: str) -> str:
     """Salva a conversa atual em um arquivo Parquet, incluindo o ID do modelo usado."""
@@ -462,10 +488,10 @@ with st.sidebar:
     # O toggle agora lê seu valor do estado, mas não o possui (sem 'key')
     # e então atualizamos o estado com a interação do usuário.
     st.session_state.web_search_enabled = st.toggle(
-    "Ativar busca na web para a próxima mensagem",
-    value=st.session_state.web_search_enabled,
-    help="Se ativado, o modelo de IA terá acesso à internet para formular a resposta."
-)
+        "Ativar busca na web para a próxima mensagem",
+        value=st.session_state.web_search_enabled,
+        help="Se ativado, o modelo de IA terá acesso à internet para formular a resposta."
+    )
 
     st.divider()
 
@@ -486,7 +512,6 @@ with st.sidebar:
     if st.session_state.show_paid_models:
         temp_models_for_company_filter.extend(PAID_MODELS)
     
-
     #available_companies = sorted(list(set(m['company'] for m in temp_models_for_company_filter)))
     available_companies = ordenar_empresas(m['company'] for m in temp_models_for_company_filter)
 
@@ -538,8 +563,43 @@ with st.sidebar:
             logging.info(f"Modelo selecionado alterado para: {st.session_state.selected_model_id}")
             st.rerun()
 
+    st.divider()
 
-    st.divider() # Mais um divisor
+    # Entrada da Chave API - CORRIGIDA
+    api_key_input = st.text_input(
+        "🔑 Chave API OpenRouter",
+        type="password",
+        key="api_key",
+        help="Insira sua chave API do OpenRouter (deve começar com 'sk-or-v1-')",
+        placeholder="sk-or-v1-..."
+    )
+
+    # Validação em tempo real da API Key
+    if st.session_state.api_key:
+        if not st.session_state.api_key.startswith('sk-or-v1-'):
+            st.error("⚠️ A chave API deve começar com 'sk-or-v1-'. Verifique se você está usando uma chave do OpenRouter.")
+        elif len(st.session_state.api_key) < 20:
+            st.warning("⚠️ A chave API parece muito curta. Verifique se foi copiada completamente.")
+        else:
+            st.success("✅ Formato da chave API válido")
+
+    if not st.session_state.api_key:
+        st.warning("⚠️ Insira sua chave API para usar o chat.")
+
+    # Botão de teste da API Key
+    if st.session_state.api_key and st.button("🧪 Testar API Key"):
+        with st.spinner("Testando API Key..."):
+            if test_api_key(st.session_state.api_key):
+                st.success("✅ API Key válida!")
+            else:
+                st.error("❌ API Key inválida ou sem acesso. Verifique se:")
+                st.write("- A chave foi copiada corretamente")
+                st.write("- A chave não expirou")
+                st.write("- Sua conta OpenRouter tem créditos")
+
+    st.markdown("[Obter chave OpenRouter](https://openrouter.ai/keys)", unsafe_allow_html=True)
+
+    st.divider()
 
     # Conversas Salvas
     st.header("📂 Conversas Salvas")
@@ -603,19 +663,6 @@ with st.sidebar:
                 else:
                     st.toast("Falha ao atualizar os modelos.", icon="❌")
 
-    st.divider()
-
-    # Entrada da Chave API
-    st.text_input(
-        "🔑 Chave API OpenRouter",
-        type="password",
-        key="api_key",
-        help="Insira sua chave API do OpenRouter."
-    )
-    if not st.session_state.api_key:
-        st.warning("⚠️ Insira sua chave API para usar o chat.")
-    st.markdown("[Obter chave OpenRouter](https://openrouter.ai/keys)", unsafe_allow_html=True)
-
 
 # --- Área Principal do Chat ---
 st.title("💬 Chat Pro com OpenRouter")
@@ -633,7 +680,7 @@ else:
         with st.chat_message(name=role, avatar=avatar):
             st.markdown(message.get('content', ''))
 
-# 3. Entrada de Prompt do Usuário (sempre no fundo)
+# Entrada de Prompt do Usuário
 input_disabled = not st.session_state.api_key or not st.session_state.selected_model_id
 prompt = st.chat_input(
     "Digite sua mensagem aqui...",
@@ -641,7 +688,7 @@ prompt = st.chat_input(
     disabled=input_disabled,
 )
 
-# 4. Lógica de processamento do prompt (idêntica à da Opção 1)
+# Lógica de processamento do prompt
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     save_conversation(st.session_state.conversation_id, st.session_state.messages, st.session_state.selected_model_id)
